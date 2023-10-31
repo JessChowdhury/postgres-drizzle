@@ -4,6 +4,4 @@ export default async function handler() {
   return NextResponse.json({ message: "Hello Edge!" });
 }
 
-export const config = {
-  runtime: "edge",
-};
+export const runtime = 'edge'
