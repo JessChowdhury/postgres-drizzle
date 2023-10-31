@@ -1,23 +1,19 @@
-import { db, UsersTable } from '@/lib/drizzle'
-import { timeAgo } from '@/lib/utils'
+import { db, NewUser, UsersTable } from '@/lib/drizzle'
 import Image from 'next/image'
 import RefreshButton from './refresh-button'
-import { seed } from '@/lib/seed'
-
 export default async function Table() {
-  let users
+  let users = [] as NewUser[]
   let startTime = Date.now()
   try {
-    users = await db.select().from(UsersTable)
+    const getUsers = await fetch('https://postgres-drizzle-eosin.vercel.app/api/users')
+      .then(response => response.json())
+    users = getUsers.users
   } catch (e: any) {
     if (e.message === `relation "users" does not exist`) {
       console.log(
         'Table does not exist, creating and seeding it with dummy data now...'
       )
-      // Table is not created yet
-      await seed()
-      startTime = Date.now()
-      users = await db.select().from(UsersTable)
+      users = []
     } else {
       throw e
     }
@@ -37,7 +33,7 @@ export default async function Table() {
         <RefreshButton />
       </div>
       <div className="divide-y divide-gray-900/5">
-        {users.map((user) => (
+        {users && users.length > 0 && users.map((user: NewUser) => (
           <div
             key={user.name}
             className="flex items-center justify-between py-3"
@@ -55,7 +51,6 @@ export default async function Table() {
                 <p className="text-sm text-gray-500">{user.email}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-500">{timeAgo(user.createdAt)}</p>
           </div>
         ))}
       </div>
